@@ -1,17 +1,29 @@
 package com.example.guessinggame
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class GameViewModel: ViewModel() {
     private val words = listOf("Android", "Activity", "Fragment")
     private val secretWord = words.random().uppercase()
-    var secretWordDisplay = ""
+
+    val secretWordDisplay: LiveData<String> get() = _secretWordDisplay
+    private val _secretWordDisplay = MutableLiveData<String>()
+
     private var correctGuesses = ""
-    var incorrectGuesses = ""
-    var livesLeft = 8
+
+    val incorrectGuesses: LiveData<String> get() = _incorrectGuesses
+    private val _incorrectGuesses = MutableLiveData("")
+
+    val livesLeft: LiveData<Int> get() = _livesLeft
+    private val _livesLeft = MutableLiveData(8)
+
+    val gameOver: LiveData<Boolean> get() = _gameOver
+    private val _gameOver = MutableLiveData(false)
 
     init {
-        secretWordDisplay = produceSecretWordDisplay()
+        _secretWordDisplay.value = produceSecretWordDisplay()
     }
 
     private fun checkLetter(str: String) = when (correctGuesses.contains(str)) {
@@ -31,17 +43,20 @@ class GameViewModel: ViewModel() {
         if (guess.length == 1) {
             if (secretWord.contains(guess)) {
                 correctGuesses += guess
-                secretWordDisplay = produceSecretWordDisplay()
+                _secretWordDisplay.value = produceSecretWordDisplay()
             } else {
-                incorrectGuesses += "$guess "
-                livesLeft--
+                _incorrectGuesses.value += "$guess "
+                _livesLeft.value = livesLeft.value?.minus(1)
+            }
+            if (isWon() || isLost()) {
+                _gameOver.value = true
             }
         }
     }
 
-    fun isWon() = secretWord.equals(secretWordDisplay, true)
+    private fun isWon() = secretWord.equals(_secretWordDisplay.value, true)
 
-    fun isLost() = livesLeft <= 0
+    private fun isLost() = (livesLeft.value ?: 0) <= 0
 
     fun wonLostMessage(): String {
         var message = ""
