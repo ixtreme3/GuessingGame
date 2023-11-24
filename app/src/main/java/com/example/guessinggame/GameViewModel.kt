@@ -60,9 +60,18 @@ class GameViewModel: ViewModel() {
 
     fun wonLostMessage(): String {
         var message = ""
-        if (isWon()) message = "You won!"
-        else if (isLost()) message = "You lost!"
+
+        if (isWon()) {
+            message = "You won!"
+        } else if (isLost()) {
+            message = "You lost!"
+        }
+
         message += " The word was $secretWord."
         return message
+    }
+
+    fun finishGame() {
+        _gameOver.value = true
     }
 }
